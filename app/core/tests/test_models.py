@@ -1,5 +1,4 @@
-"""
-Tests for models.
+"""Tests for models.
 """
 from django.contrib.auth import get_user_model
 from django.test import TestCase
