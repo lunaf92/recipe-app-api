@@ -62,6 +62,7 @@ class Recipe(models.Model):
     time_minutes = models.IntegerField()
     price = models.DecimalField(max_digits=5, decimal_places=2)
     link = models.CharField(max_length=255, blank=True)
+    tags = models.ManyToManyField("Tag")
 
     class Meta:
         verbose_name = _("Recipe")
@@ -69,3 +70,22 @@ class Recipe(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Tag(models.Model):
+    """Tags for filtering recipes"""
+
+    name = models.CharField(max_length=255)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        verbose_name=_("Author"),
+        on_delete=models.CASCADE,
+        related_name="tag",
+    )
+
+    class Meta:
+        verbose_name = _("Tag")
+        verbose_name_plural = _("Tags")
+
+    def __str__(self):
+        return self.name
