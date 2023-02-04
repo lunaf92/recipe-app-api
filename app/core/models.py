@@ -1,6 +1,7 @@
 """
 Database models.
 """
+from django.conf import settings
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
@@ -46,3 +47,25 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     USERNAME_FIELD = "email"
+
+
+class Recipe(models.Model):
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        verbose_name=_("Author"),
+        on_delete=models.CASCADE,
+        related_name="recipe",
+    )
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    time_minutes = models.IntegerField()
+    price = models.DecimalField(max_digits=5, decimal_places=2)
+    link = models.CharField(max_length=255, blank=True)
+
+    class Meta:
+        verbose_name = _("Recipe")
+        verbose_name_plural = _("Recipes")
+
+    def __str__(self):
+        return self.title
