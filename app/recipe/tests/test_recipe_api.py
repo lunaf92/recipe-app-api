@@ -393,7 +393,7 @@ class PrivateRecipeApiTests(TestCase):
             ]
         }
         url = detail_url(recipe_id=recipe.id)
-        res = self.client.patch(url, payload)
+        res = self.client.patch(url, payload, format="json")
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         ingredient = Ingredient.objects.get(
             name="ingredient one", user=self.user
@@ -419,7 +419,7 @@ class PrivateRecipeApiTests(TestCase):
         }
 
         url = detail_url(recipe_id=recipe.id)
-        res = self.client.patch(url, payload)
+        res = self.client.patch(url, payload, format="json")
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertNotIn(ingredient_one, recipe.ingredients.all())
@@ -433,7 +433,7 @@ class PrivateRecipeApiTests(TestCase):
         self.assertEqual(recipe.ingredients.count(), 1)
         payload = {"ingredients": []}
         url = detail_url(recipe_id=recipe.id)
-        res = self.client.patch(url, payload)
+        res = self.client.patch(url, payload, format="json")
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(recipe.ingredients.count(), 0)
