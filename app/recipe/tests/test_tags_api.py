@@ -1,7 +1,9 @@
 """
 Tests for the tags API
 """
-from core.models import Tag
+from decimal import Decimal
+
+from core.models import Recipe, Tag
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
@@ -96,3 +98,60 @@ class PrivateTagsApiTests(TestCase):
 
         tags = Tag.objects.filter(user=self.user)
         self.assertFalse(tags.exists())
+
+    def test_tag_in_use_filter(self):
+        """Testing that only the tags in use are returned"""
+        t1 = Tag.objects.create(user=self.user, name="tag one")
+        t2 = Tag.objects.create(user=self.user, name="tag two")
+        t3 = Tag.objects.create(user=self.user, name="tag three")
+        r1 = Recipe.objects.create(
+            user=self.user,
+            title="recipe one",
+            price=Decimal("2.30"),
+            time_minutes=30,
+        )
+        r2 = Recipe.objects.create(
+            user=self.user,
+            title="recipe two",
+            price=Decimal("2.30"),
+            time_minutes=30,
+        )
+
+        r1.tags.add(t1)
+        r2.tags.add(t2)
+
+        s1 = TagSerializer(t1)
+        s2 = TagSerializer(t2)
+        s3 = TagSerializer(t3)
+
+        params = {"assigned_only": 1}
+        res = self.client.get(TAGS_URL, params)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn(s1.data, res.data)
+        self.assertIn(s2.data, res.data)
+        self.assertNotIn(s3.data, res.data)
+
+    def test_tags_unique(self):
+        """testing that filtering tags does not return duplicates"""
+        t1 = Tag.objects.create(user=self.user, name="tag one")
+        Tag.objects.create(user=self.user, name="tag two")
+        r1 = Recipe.objects.create(
+            user=self.user,
+            title="recipe one",
+            price=Decimal("2.30"),
+            time_minutes=30,
+        )
+        r2 = Recipe.objects.create(
+            user=self.user,
+            title="recipe two",
+            price=Decimal("2.30"),
+            time_minutes=30,
+        )
+
+        r1.tags.add(t1)
+        r2.tags.add(t1)
+
+        params = {"assigned_only": 1}
+        res = self.client.get(TAGS_URL, params)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(res.data), 1)
